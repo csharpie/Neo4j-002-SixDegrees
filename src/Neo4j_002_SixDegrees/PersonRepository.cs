@@ -84,7 +84,7 @@ public class PersonRepository : IDisposable
     });
   }
 
-  public List<string> DegreesOfSeparationByAllSimplePaths(Person they, Person them, int depth)
+  public List<DegreesOfSeparation> DegreesOfSeparationByAllSimplePaths(Person they, Person them, int depth)
   {
     using var session = _driver.Session(WithDatabase);
 
@@ -96,13 +96,15 @@ public class PersonRepository : IDisposable
                        WHERE they.name = $theysName AND them.name = $themsName
                        CALL apoc.algo.allSimplePaths(they, them, 'FRIENDS', $depth)
                        YIELD path
-                       RETURN path",
+                       WITH
+                        nodes(path) as nodes
+                       RETURN [node in nodes | node.name] AS names",
               new Dictionary<string, object> { { "theysName", they.Name }, { "themsName", them.Name }, { "depth", depth } }
-          ).Select(suggestedFriendNode => suggestedFriendNode["Name"].As<string>()).ToList();
+          ).Select(node => new DegreesOfSeparation(node["names"].As<List<string>>(), node["names"].As<List<string>>().Count - 1)).ToList();
     });
   }
 
-  public List<string> DegreesOfSeparationByShortestPath(Person they, Person them)
+  public DegreesOfSeparation DegreesOfSeparationByShortestPath(Person they, Person them)
   {
     using var session = _driver.Session(WithDatabase);
 
@@ -110,15 +112,12 @@ public class PersonRepository : IDisposable
     {
       return transaction.Run(@"
                       MATCH
-                        (they:Person { name: $theysName }),
-                        (them: Person { name: $themsName }),
-                        path = (they)-[:FRIENDS *..4]-(them)
-                      RETURN path AS shortestPath,
-                        reduce(distance = 0, r in relationships(path) | distance + r.distance) AS totalDistance
-                      ORDER BY totalDistance ASC
-                      LIMIT 1",
+                          path = shortestPath((they:Person { name: $theysName })-[:FRIENDS*]-(them: Person { name: $themsName }))
+                      WITH
+                          nodes(path) as nodes
+                      RETURN[node in nodes | node.name] AS names",
               new Dictionary<string, object> { { "theysName", they.Name }, { "themsName", them.Name } }
-          ).Select(suggestedFriendNode => suggestedFriendNode["Name"].As<string>()).ToList();
+          ).Select(node => new DegreesOfSeparation(node["names"].As<List<string>>(), node["names"].As<List<string>>().Count - 1)).SingleOrDefault(new DegreesOfSeparation(new List<string>(), default));
     });
   }
 
@@ -135,7 +134,7 @@ public class PersonRepository : IDisposable
     var mary = CreatePerson("Mary");
 
     MakeMutualFriends(johnathan, mark);
-    MakeMutualFriends(mark, mary);
+    MakeMutualFriends(mark, phil);
     MakeMutualFriends(phil, mary);
     MakeMutualFriends(mark, mary);
   }

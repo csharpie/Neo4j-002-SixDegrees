@@ -23,7 +23,7 @@ PS C:\Users\demouser> choco install neo4j-community
 
 #### For Windows (using Chocolatey)
 ```powershell
-PS C:\tools\neo4j-community\neo4j-community-3.5.1> bin\neo4j.bat start 
+PS C:\tools\neo4j-community\neo4j-community-5.11.0> bin\neo4j.bat start 
 ```
 
 ### Stopping Neo4j
@@ -34,7 +34,7 @@ PS C:\tools\neo4j-community\neo4j-community-3.5.1> bin\neo4j.bat start
 
 #### For Windows (using Chocolatey)
 ```powershell
-PS C:\tools\neo4j-community\neo4j-community-3.5.1> bin\neo4j.bat stop 
+PS C:\tools\neo4j-community\neo4j-community-5.11.0> bin\neo4j.bat stop 
 ```
 
 ## Run the app

@@ -17,9 +17,19 @@ class Program
     var repository = new PersonRepository(driver);
 
     var johnathan = repository.FindPerson("Johnathan");
-    var suggestedFriendsForJohnathan = repository.SuggestFriends(johnathan);
+    var mary = repository.FindPerson("Mary");
 
-    Console.WriteLine($"{johnathan.Name} should become friends with {string.Join(", ", suggestedFriendsForJohnathan)}");
+    var degreesOfSeparationByAllSimplePaths = repository.DegreesOfSeparationByAllSimplePaths(johnathan, mary, 4);
+    var degreesOfSeparationByShortestPath = repository.DegreesOfSeparationByShortestPath(johnathan, mary);
+
+    Console.WriteLine("All Simple Paths: ");
+    foreach (var path in degreesOfSeparationByAllSimplePaths)
+    {
+      Console.WriteLine($"{path.Degrees} degrees: {string.Join(" => friends => ", path.Names)}");
+    }
+
+    Console.WriteLine("Shortest Path: ");
+    Console.WriteLine($"{degreesOfSeparationByShortestPath.Degrees} degrees: {string.Join(" => friends => ", degreesOfSeparationByShortestPath.Names)}");
 
     Console.ReadKey();
   }
